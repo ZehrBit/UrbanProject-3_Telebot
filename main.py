@@ -51,7 +51,7 @@ def character_set():
     pass
 
 
-def pixels_to_ascii(image, charset):
+def pixels_to_ascii(image, charset=ASCII_CHARS):
     pixels = image.getdata()
     characters = ""
     for pixel in pixels:
@@ -80,25 +80,20 @@ def send_welcome(message):
 @bot.message_handler(content_types=['photo'])
 def handle_photo(message):
     bot.reply_to(message,
-                 'Я получил твоё фото! Пожалуйста, пришли набор символов для ASCII арта. Если прислать 0(Ноль), то набор по умолчанию будет "@%#*+=-:. "')
+                 'Я получил твоё фото! Пожалуйста, пришли набор символов для ASCII арта. Если нажать "Символы по умолчанию", '
+                 'то набор будет "@%#*+=-:. "',
+                 reply_markup=types.InlineKeyboardMarkup().add(
+                     types.InlineKeyboardButton("Символы по умолчанию", callback_data="remain")))
     user_states[message.chat.id] = {'photo': message.photo[-1].file_id, 'waiting_for_charset': True}
 
 
 @bot.message_handler(content_types=['text'])
 def handle_text(message):
     if message.chat.id in user_states and 'waiting_for_charset' in user_states[message.chat.id]:
-        if message.text == "0":
-            user_states[message.chat.id]['charset'] = ASCII_CHARS
-            bot.reply_to(message,
-                         f'Набор символов по умолчанию "{ASCII_CHARS}". Теперь выбери действие с изображением.',
-                         reply_markup=get_options_keyboard())
-            del user_states[message.chat.id]['waiting_for_charset']
-        else:
-            # Сохраняем пользовательский набор символов
+        if message.text:
             user_states[message.chat.id]['charset'] = message.text
             bot.reply_to(message, "Набор символов сохранён. Теперь выбери действие с изображением.",
                          reply_markup=get_options_keyboard())
-            # Убираем состояние ожидания набора символов
             del user_states[message.chat.id]['waiting_for_charset']
     else:
         bot.reply_to(message, "Пожалуйста, пришли изображение или выбери действие с изображением.")
@@ -120,6 +115,12 @@ def callback_query(call):
     elif call.data == "ascii":
         bot.answer_callback_query(call.id, "Преобразование изображения в формат ASCII...")
         ascii_and_send(call.message)
+    elif call.data == "remain":
+        bot.answer_callback_query(call.id, 'Набор символов по умолчанию будет: @%#*+=-:. ')
+        bot.reply_to(call.message, "Набор символов оставлен по умолчанию. Теперь выбери действие с изображением.",
+                     reply_markup=get_options_keyboard())
+        user_states[call.message.chat.id]['charset'] = ASCII_CHARS
+        del user_states[call.message.chat.id]['waiting_for_charset']
 
 
 def pixelate_and_send(message):
@@ -143,7 +144,7 @@ def ascii_and_send(message):
     downloaded_file = bot.download_file(file_info.file_path)
 
     image_stream = io.BytesIO(downloaded_file)
-    charset = user_states[message.chat.id].get('charset', ASCII_CHARS)
+    charset = user_states[message.chat.id].get('charset')
     ascii_art = image_to_ascii(image_stream, charset=charset)
     bot.send_message(message.chat.id, f"```\n{ascii_art}\n```", parse_mode="MarkdownV2")
 
