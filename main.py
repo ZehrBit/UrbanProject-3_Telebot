@@ -44,6 +44,7 @@ def handle_photo(message):
 
 @bot.message_handler(content_types=['text'])
 def handle_text(message):
+    """Выполняет действия в зависимости от статуса пользователя"""
     if message.chat.id in user_states and 'waiting_for_charset' in user_states[message.chat.id]:
         if message.text:
             user_states[message.chat.id]['charset'] = message.text
