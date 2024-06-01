@@ -7,6 +7,7 @@ from config import TELEGRAM_TOKEN, ASCII_CHARS
 from image_processing.pixelate import pixelate
 from image_processing.to_ascii import to_ascii
 from image_processing.negative import negative
+from image_processing.convert_to_heatmap import to_heatmap
 from image_processing.mirror import mirror
 import keyboards
 from loguru import logger
@@ -72,7 +73,7 @@ def handle_photo(message):
 @logger.catch
 @bot.message_handler(content_types=['text'])
 def handle_text(message):
-    try:
+    if message.chat.id in user_status_for_user_id:
         """Выполняет действия в зависимости от статуса пользователя"""
         if user_status_for_user_id[message.chat.id]["user_status"]['waiting for image']:
             bot.reply_to(message, "Пожалуйста, пришли изображение.")
@@ -93,10 +94,10 @@ def handle_text(message):
                 f'User id: {message.chat.id}, first_name: {message.from_user.first_name}, username: {message.from_user.username} бот ждёт действие с изображением, но пользователь прислал текст')
         elif user_status_for_user_id[message.chat.id]["user_status"]['waiting for flip']:
             bot.reply_to(message, "Сначала выбери как отразить изображение или пришли новое",
-                         reply_parameters=keyboards.keyboard_for_mirror_options())
+                         reply_markup=keyboards.keyboard_for_mirror_options())
             logger.info(
                 f'User id: {message.chat.id}, first_name: {message.from_user.first_name}, username: {message.from_user.username} бот ждёт выбор как отразить,  но пользователь прислал текст')
-    except KeyError:
+    else:
         bot.reply_to(message, "Сначала пришли изображение")
 
 
@@ -108,7 +109,6 @@ def callback_query(call):
             bot.answer_callback_query(call.id, "Пиксельизация изображения...")
             bot.send_photo(call.message.chat.id, pixelate(get_downloaded_file(call.message)),
                            reply_markup=keyboards.get_options_keyboard())
-
             logger.info(
                 f'User id: {call.message.chat.id}, first_name: {call.from_user.first_name}, username: {call.from_user.username} использовал {call.data}')
         elif call.data == "ascii":
@@ -121,6 +121,12 @@ def callback_query(call):
         elif call.data == "negative":
             bot.answer_callback_query(call.id, "Инверсия цветов изображения...")
             bot.send_photo(call.message.chat.id, negative(get_downloaded_file(call.message)),
+                           reply_markup=keyboards.get_options_keyboard())
+            logger.info(
+                f'User id: {call.message.chat.id}, first_name: {call.from_user.first_name}, username: {call.from_user.username} использовал {call.data}')
+        elif call.data == "heatmap":
+            bot.answer_callback_query(call.id, "Преобразование изображения в тепловую карту...")
+            bot.send_photo(call.message.chat.id, to_heatmap(get_downloaded_file(call.message)),
                            reply_markup=keyboards.get_options_keyboard())
             logger.info(
                 f'User id: {call.message.chat.id}, first_name: {call.from_user.first_name}, username: {call.from_user.username} использовал {call.data}')
@@ -149,6 +155,7 @@ def callback_query(call):
             bot.reply_to(call.message, "Набор символов оставлен по умолчанию. Теперь выбери действие с изображением.",
                          reply_markup=keyboards.get_options_keyboard())
             user_status_for_user_id[call.message.chat.id]['charset'] = ASCII_CHARS
+            change_user_status(call.message.chat.id, 'waiting for image action')
             logger.info(
                 f'User id: {call.message.chat.id}, first_name: {call.from_user.first_name}, username: {call.from_user.username} оставил набор символов по умолчанию')
     else:

@@ -8,7 +8,8 @@ def get_options_keyboard():
     ascii_btn = types.InlineKeyboardButton("ASCII art", callback_data="ascii")
     negative_btn = types.InlineKeyboardButton("Инверсия цветов", callback_data="negative")
     mirror_btn = types.InlineKeyboardButton("Отражение", callback_data="mirror")
-    keyboard.add(pixelate_btn, ascii_btn, negative_btn, mirror_btn)
+    heatmap_btn = types.InlineKeyboardButton("Тепловая карта", callback_data="heatmap")
+    keyboard.add(pixelate_btn, ascii_btn, negative_btn, mirror_btn, heatmap_btn)
     return keyboard
 
 
