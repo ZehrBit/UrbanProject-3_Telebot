@@ -9,7 +9,8 @@ def get_options_keyboard():
     negative_btn = types.InlineKeyboardButton("Инверсия цветов", callback_data="negative")
     mirror_btn = types.InlineKeyboardButton("Отражение", callback_data="mirror")
     heatmap_btn = types.InlineKeyboardButton("Тепловая карта", callback_data="heatmap")
-    keyboard.add(pixelate_btn, ascii_btn, negative_btn, mirror_btn, heatmap_btn)
+    sticker_btn = types.InlineKeyboardButton("Размер для стикера", callback_data="sticker")
+    keyboard.add(pixelate_btn, ascii_btn, negative_btn, mirror_btn, heatmap_btn, sticker_btn)
     return keyboard
 
 

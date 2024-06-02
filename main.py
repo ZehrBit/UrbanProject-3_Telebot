@@ -8,6 +8,7 @@ from image_processing.pixelate import pixelate
 from image_processing.to_ascii import to_ascii
 from image_processing.negative import negative
 from image_processing.convert_to_heatmap import to_heatmap
+from image_processing.resize_for_sticker import resize_for_sticker
 from image_processing.mirror import mirror
 import keyboards
 from loguru import logger
@@ -130,6 +131,13 @@ def callback_query(call):
                            reply_markup=keyboards.get_options_keyboard())
             logger.info(
                 f'User id: {call.message.chat.id}, first_name: {call.from_user.first_name}, username: {call.from_user.username} использовал {call.data}')
+        elif call.data == "sticker":
+            bot.answer_callback_query(call.id, "Изменение размера изображения для стикера...")
+            bot.send_photo(call.message.chat.id, resize_for_sticker(get_downloaded_file(call.message)),
+                           reply_markup=keyboards.get_options_keyboard())
+            logger.info(
+                f'User id: {call.message.chat.id}, first_name: {call.from_user.first_name}, username: {call.from_user.username} использовал {call.data}')
+
         elif call.data == "mirror":
             bot.send_message(call.message.chat.id, "Выбери вариант как перевернуть изображение...",
                              reply_markup=keyboards.keyboard_for_mirror_options())
