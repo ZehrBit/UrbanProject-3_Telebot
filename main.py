@@ -9,7 +9,7 @@ from image_processing.to_ascii import to_ascii
 from image_processing.negative import negative
 from image_processing.convert_to_heatmap import to_heatmap
 from image_processing.resize_for_sticker import resize_for_sticker
-from image_processing.random_joke import random_joke
+from image_processing.random_message import random_joke, random_compliment
 from image_processing.mirror import mirror
 import keyboards
 from loguru import logger
@@ -140,7 +140,12 @@ def callback_query(call):
                 f'User id: {call.message.chat.id}, first_name: {call.from_user.first_name}, username: {call.from_user.username} использовал {call.data}')
         elif call.data == "joke":
             bot.answer_callback_query(call.id, "Отправка случайной шутки...")
-            bot.send_message(call.message.chat.id, random_joke())
+            bot.send_message(call.message.chat.id, random_joke(), reply_markup=keyboards.keyboard_for_random_message())
+            logger.info(
+                f'User id: {call.message.chat.id}, first_name: {call.from_user.first_name}, username: {call.from_user.username} использовал {call.data}')
+        elif call.data == "compliment":
+            bot.answer_callback_query(call.id, "Отправка случайного комплимента...")
+            bot.send_message(call.message.chat.id, random_compliment(), reply_markup=keyboards.keyboard_for_random_message())
             logger.info(
                 f'User id: {call.message.chat.id}, first_name: {call.from_user.first_name}, username: {call.from_user.username} использовал {call.data}')
         elif call.data == "mirror":
