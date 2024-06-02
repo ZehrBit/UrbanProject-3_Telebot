@@ -57,3 +57,8 @@ def random_compliment():
     """Отправляет случайный комплимент"""
     compliment = random.choice(COMPLIMENTS)
     return compliment
+
+
+def random_flip_a_coin():
+    """Возвращает случайное значение Орёл или Решка"""
+    return random.choice(("Орёл", "Решка"))

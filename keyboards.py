@@ -32,3 +32,11 @@ def keyboard_for_random_message():
     compliment_btn = types.InlineKeyboardButton("Случайный комплимент", callback_data="compliment")
     keyboard.add(joke_btn, compliment_btn)
     return keyboard
+
+
+def keyboard_for_flip_a_coin():
+    """Клавиатура для подбрасывания монетки"""
+    keyboard = types.InlineKeyboardMarkup()
+    flip_a_coin_btn = types.InlineKeyboardButton("Подбросить монетку", callback_data="flip_a_coin")
+    keyboard.add(flip_a_coin_btn)
+    return keyboard
